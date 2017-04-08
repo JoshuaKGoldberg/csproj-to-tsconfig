@@ -1,13 +1,13 @@
 import * as fs from "mz/fs";
 
-import { SourceParser } from "./conversions/sourceParser";
+import { IMSBuildReplacements, SourceParser } from "./conversions/sourceParser";
 import { TargetCreator } from "./conversions/targetCreator";
 import { TemplateParser } from "./conversions/templateParser";
 import { IFileReader } from "./files/fileReader";
 import { IFileWriter } from "./files/fileWriter";
 
 /**
- * 
+ * Dependencies to initialize a new Converter.
  */
 export interface IConverterDependencies {
     /**
@@ -47,18 +47,23 @@ export interface IConversionSettings {
     csproj: string;
 
     /**
-     * File path to the target .tsconfig file.
+     * MSBuild values to replace in raw source file paths.
+     */
+    replacements?: IMSBuildReplacements;
+
+    /**
+     * File path to the target tsconfig.json file.
      */
     target: string;
 
     /**
-     * File path to the template .tsconfig file.
+     * File path to the template tsconfig.json file.
      */
     template: string;
 }
 
 /**
- * Converts .csproj files to their .tsconfig.json equivalents.
+ * Converts .csproj files to their tsconfig.json.json equivalents.
  */
 export class Converter {
     /**
@@ -100,7 +105,7 @@ export class Converter {
     }
 
     /**
-     * Converts a .csproj file to its .tsconfig.json equivalent.
+     * Converts a .csproj file to its tsconfig.json.json equivalent.
      * 
      * @param settings   Settings for conversion.
      * @returns A Promise for completing the conversion.
@@ -111,7 +116,7 @@ export class Converter {
             this.fileReader(conversionSettings.template)
         ]);
 
-        const sourceFiles = this.sourceParser.intake(csprojContents);
+        const sourceFiles = this.sourceParser.intake(csprojContents, conversionSettings.replacements);
         const templateStructure = this.templateParser.intake(templateContents);
 
         const result = this.targetCreator.join(templateStructure, sourceFiles);
