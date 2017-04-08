@@ -1,0 +1,45 @@
+{
+  "name": "csproj-to-tsconfig",
+  "version": "0.1.0",
+  "description": "Converts .csproj files with TypeScript includes to their tsconfig.json equivalents.",
+  "bin": {
+    "csproj-to-tsconfig": "./bin/csproj-to-tsconfig"
+  },
+  "main": "./lib/cli.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshuakgoldberg/csproj-to-tsconfig.git"
+  },
+  "keywords": [
+    "csproj", "tsconfig", "msbuild", "typescript"
+  ],
+  "author": {
+    "name": "Josh Goldberg",
+    "email": "joshuakgoldberg@outlook.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joshuakgoldberg/csproj-to-tsconfig/issues"
+  },
+  "homepage": "https://github.com/joshuakgoldberg/csproj-to-tsconfig#readme",
+  "dependencies": {
+    "mz": "^2.6.0",
+    "strip-json-comments": "^2.0.1",
+    "yargs": "^7.0.2"
+  },
+  "devDependencies": {
+    "@types/mz": "0.0.30",
+    "@types/node": "^7.0.4",
+    "@types/yargs": "^6.6.0",
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.4.0",
+    "gulp-tslint": "^7.0.1",
+    "gulp-typescript": "^3.1.4",
+    "merge2": "^1.0.3",
+    "mustache": "^2.3.0",
+    "run-sequence": "^1.2.2",
+    "tslint": "^5.0.0",
+    "typescript": "^2.2.2"
+  }
+}
