@@ -1,5 +1,6 @@
 import * as fs from "mz/fs";
 
+import { mergeSettings } from "./conversions/mergeSettings";
 import { IMSBuildReplacements, SourceParser } from "./conversions/sourceParser";
 import { TargetCreator } from "./conversions/targetCreator";
 import { TemplateParser } from "./conversions/templateParser";
@@ -34,7 +35,6 @@ export interface IConverterDependencies {
      * Parses tsconfig.json files.
      */
     templateParser?: TemplateParser;
-
 }
 
 /**
@@ -45,6 +45,11 @@ export interface IConversionSettings {
      * File path to the source .csproj file.
      */
     csproj: string;
+
+    /**
+     * Any overrides to copy onto the tsconfig.json structure.
+     */
+    overrides?: object;
 
     /**
      * MSBuild values to replace in raw source file paths.
@@ -110,17 +115,19 @@ export class Converter {
      * @param settings   Settings for conversion.
      * @returns A Promise for completing the conversion.
      */
-    public async convert(conversionSettings: IConversionSettings): Promise<void> {
+    public async convert(settings: IConversionSettings): Promise<void> {
         const [csprojContents, templateContents] = await Promise.all([
-            this.fileReader(conversionSettings.csproj),
-            this.fileReader(conversionSettings.template)
+            this.fileReader(settings.csproj),
+            this.fileReader(settings.template)
         ]);
 
-        const sourceFiles = this.sourceParser.intake(csprojContents, conversionSettings.replacements);
+        const sourceFiles = this.sourceParser.intake(csprojContents, settings.replacements);
         const templateStructure = this.templateParser.intake(templateContents);
 
-        const result = this.targetCreator.join(templateStructure, sourceFiles);
+        const result = this.targetCreator.join(
+            mergeSettings<any>(templateStructure, settings.overrides || {}),
+            sourceFiles);
 
-        await this.fileWriter(conversionSettings.target, result);
+        await this.fileWriter(settings.target, result);
     }
 }
