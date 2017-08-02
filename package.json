@@ -1,6 +1,6 @@
 {
   "name": "csproj-to-tsconfig",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Converts .csproj files with TypeScript includes to their tsconfig.json equivalents.",
   "bin": {
     "csproj-to-tsconfig": "./bin/csproj-to-tsconfig"
