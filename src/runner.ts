@@ -78,23 +78,24 @@ export class Runner {
     /**
      * Runs the program.
      *
-     * @param settings   Settings to convert files.
+     * @param rawSettings   Settings to convert files.
      * @returns Status from attempting to run the program.
      */
-    public async run(settings: Partial<IConversionSettings>): Promise<StatusCode> {
-        if (!settings.template) {
-            settings.template = settings.target;
+    public async run(rawSettings: Partial<IConversionSettings>): Promise<StatusCode> {
+        if (!rawSettings.template) {
+            rawSettings.template = rawSettings.target;
         }
 
-        if (!this.ensureSettingsExist(settings)) {
+        const settings = this.ensureSettingsExist(rawSettings);
+        if (settings === undefined) {
             return Promise.resolve(StatusCode.MissingArguments);
         }
 
-        if (!(await this.ensureFilesExist(settings as IConversionSettings))) {
+        if (!(await this.ensureFilesExist(settings))) {
             return Promise.resolve(StatusCode.FileNotFound);
         }
 
-        await this.converter.convert(settings as IConversionSettings);
+        await this.converter.convert(settings);
 
         return StatusCode.Success;
     }
@@ -105,21 +106,21 @@ export class Runner {
      * @param settings   Settings to convert files.
      * @returns Whether all required settings exist.
      */
-    private ensureSettingsExist(settings: Partial<IConversionSettings>): boolean {
+    private ensureSettingsExist(settings: Partial<IConversionSettings>): IConversionSettings | undefined {
         const errors: string[] = [];
 
         ensureSettingExists(errors, settings, "csproj");
         ensureSettingExists(errors, settings, "target");
 
         if (errors.length === 0) {
-            return true;
+            return settings as IConversionSettings;
         }
 
         for (const error of errors) {
             this.errorStream(error);
         }
 
-        return false;
+        return undefined;
     }
 
     /**
