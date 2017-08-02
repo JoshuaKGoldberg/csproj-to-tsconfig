@@ -1,15 +1,22 @@
 var gulp = require("gulp");
 
 var createTsProject = (function () {
-    var projects = {};
+    var tsProjects = {};
+    var gulpTypeScript;
 
-    return function (fileName) {
-        var ts = require("gulp-typescript");
+    return function (fileName, options) {
+        if (!gulpTypeScript) {
+             gulpTypeScript = require("gulp-typescript");
+        }
 
-        return projects[fileName] = ts.createProject(fileName);
-    };
+        if (!tsProjects[fileName]) {
+            tsProjects[fileName] = gulpTypeScript.createProject(fileName, options);
+        }
+
+        return tsProjects[fileName];
+    }
 })();
- 
+
 gulp.task("clean", function () {
     var del = require("del");
 
@@ -19,11 +26,19 @@ gulp.task("clean", function () {
 gulp.task("tslint", function () {
     var gulpTslint = require("gulp-tslint");
     var tslint = require("tslint");
-
     var program = tslint.Linter.createProgram("./tsconfig.json");
 
-    return gulp.src("src/**/*.ts", { base: '.' })
-        .pipe(gulpTslint({ program }))
+    return gulp
+        .src(
+            ["src/**/*.ts"],
+            {
+                base: "."
+            })
+        .pipe(gulpTslint({
+            formatter: "verbose",
+            program
+        }))
+        .pipe(gulpTslint.report());
 });
 
 gulp.task("tsc", function () {
@@ -52,7 +67,8 @@ gulp.task("default", callback => {
     var runSequence = require("run-sequence").use(gulp);
 
     runSequence(
-        ["clean", "tslint"],
+        ["clean"],
         ["tsc"],
+        ["tslint"],
         callback);
 });

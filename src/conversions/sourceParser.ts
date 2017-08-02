@@ -11,7 +11,7 @@ export interface IMSBuildReplacements {
 export class SourceParser {
     /**
      * Retrieves input file names from raw .csproj contents.
-     * 
+     *
      * @param contents   Raw contents of a .csproj file.
      * @param replacements   MSBuild values to replace in raw source file paths.
      * @returns The .csproj's source file paths.
@@ -24,16 +24,16 @@ export class SourceParser {
         }
 
         return lines
-            .map(line => {
+            .map((line) => {
                 for (const key in replacements) {
                     line = line.replace(new RegExp(`\\$\\(${key}\\)`, "gi"), replacements[key]);
                 }
 
                 return line;
             })
-            .filter(line => line.indexOf("$") === -1)
-            .map(line => line
-                .substring(line.indexOf(`"`) + 1, line.lastIndexOf(`"`))
+            .filter((line) => line.indexOf("$") === -1)
+            .map((line) => line
+                .substring(line.indexOf('"') + 1, line.lastIndexOf('"'))
                 .replace(/\\/g, "/"));
     }
 }

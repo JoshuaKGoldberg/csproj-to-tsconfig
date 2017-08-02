@@ -24,6 +24,28 @@ export interface IRunnerDependencies {
 }
 
 /**
+ * @param errors   Accumulated errors from ensuring settings exist.
+ * @param settings   Settings to convert files.
+ * @param setting   Name of a setting to verify the existence of.
+ */
+const ensureSettingExists = (errors: string[], settings: Partial<IConversionSettings>, setting: keyof IConversionSettings): void => {
+    if (!settings[setting]) {
+        errors.push(`Missing required argument: ${setting}`);
+    }
+};
+
+/**
+ * @param errors   Accumulated errors from ensuring files exist.
+ * @param filePath   Path to a file to verify the existence of.
+ * @param fileSettingsName   Name of the file under settings.
+ */
+const ensureFileExists = async (errors: string[], filePath: string, fileSettingsName: keyof IConversionSettings): Promise<void> => {
+    if (!(await fs.exists(filePath))) {
+        errors.push(`Missing required file: ${fileSettingsName} (checked '${filePath}').`);
+    }
+};
+
+/**
  * Runs the csproj-to-tsconfig program.
  */
 export class Runner {
@@ -44,7 +66,7 @@ export class Runner {
 
     /**
      * Initializes a new instance of the Runner class.
-     * 
+     *
      * @param dependencies   Dependencies to initialize a new Runner.
      */
     public constructor(dependencies: IRunnerDependencies) {
@@ -55,7 +77,7 @@ export class Runner {
 
     /**
      * Runs the program.
-     * 
+     *
      * @param settings   Settings to convert files.
      * @returns Status from attempting to run the program.
      */
@@ -73,10 +95,13 @@ export class Runner {
         }
 
         await this.converter.convert(settings as IConversionSettings);
+
         return StatusCode.Success;
     }
 
     /**
+     * Ensures all required settings exist for a conversion.
+     *
      * @param settings   Settings to convert files.
      * @returns Whether all required settings exist.
      */
@@ -98,6 +123,8 @@ export class Runner {
     }
 
     /**
+     * Ensures all required files exist for a conversion.
+     *
      * @param settings   Settings to convert files.
      * @returns A Promise for whether all required files exist.
      */
@@ -106,7 +133,7 @@ export class Runner {
 
         await Promise.all([
             ensureFileExists(errors, settings.csproj, "csproj"),
-            ensureFileExists(errors, settings.template, "template")
+            ensureFileExists(errors, settings.template, "template"),
         ]);
 
         if (errors.length === 0) {
@@ -118,27 +145,5 @@ export class Runner {
         }
 
         return false;
-    }
-}
-
-/**
- * @param errors   Accumulated errors from ensuring settings exist.
- * @param settings   Settings to convert files.
- * @param setting   Name of a setting to verify the existence of.
- */
-function ensureSettingExists(errors: string[], settings: Partial<IConversionSettings>, setting: keyof IConversionSettings): void {
-    if (!settings[setting]) {
-        errors.push(`Missing required argument: ${setting}`);
-    }
-}
-
-/**
- * @param errors   Accumulated errors from ensuring files exist.
- * @param filePath   Path to a file to verify the existence of.
- * @param fileSettingsName   Name of the file under settings.
- */
-async function ensureFileExists(errors: string[], filePath: string, fileSettingsName: keyof IConversionSettings): Promise<void> {
-    if (!(await fs.exists(filePath))) {
-        errors.push(`Missing required file: ${fileSettingsName} (checked '${filePath}').`);
     }
 }

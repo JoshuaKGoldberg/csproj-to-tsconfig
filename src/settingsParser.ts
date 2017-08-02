@@ -32,7 +32,7 @@ export interface IRawConversionSettings {
 export class SettingsParser {
     /**
      * Converts raw CLI settings to runtime settings.
-     * 
+     *
      * @param rawConversionSettings   Raw CLI settings.
      * @returns The equivalent runtime settings.
      */
@@ -51,8 +51,8 @@ export class SettingsParser {
         }
 
         return {
-            ...rawConversionSettings,
-            replacements
+            ...(rawConversionSettings as IConversionSettings),
+            replacements,
         };
     }
 }

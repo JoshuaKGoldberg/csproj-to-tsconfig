@@ -98,12 +98,14 @@ export class Converter {
 
     /**
      * Initializes a new instance of the Converter class.
-     * 
+     *
      * @param dependencies   Dependencies to be used for initialization.
      */
     public constructor(dependencies: IConverterDependencies = {}) {
         this.fileReader = dependencies.fileReader || (async (fileName) => (await fs.readFile(fileName)).toString());
-        this.fileWriter = dependencies.fileWriter || ((fileName, contents) => fs.writeFile(fileName, contents));
+        this.fileWriter = dependencies.fileWriter || (async (fileName, contents) => {
+            await fs.writeFile(fileName, contents);
+        });
         this.sourceParser = dependencies.sourceParser || new SourceParser();
         this.targetCreator = dependencies.targetCreator || new TargetCreator();
         this.templateParser = dependencies.templateParser || new TemplateParser();
@@ -111,22 +113,21 @@ export class Converter {
 
     /**
      * Converts a .csproj file to its tsconfig.json.json equivalent.
-     * 
+     *
      * @param settings   Settings for conversion.
      * @returns A Promise for completing the conversion.
      */
     public async convert(settings: IConversionSettings): Promise<void> {
         const [csprojContents, templateContents] = await Promise.all([
             this.fileReader(settings.csproj),
-            this.fileReader(settings.template)
+            this.fileReader(settings.template),
         ]);
 
         const sourceFiles = this.sourceParser.intake(csprojContents, settings.replacements);
         const templateStructure = this.templateParser.intake(templateContents);
+        const mergedSettings = mergeSettings(templateStructure, settings.overrides || {});
 
-        const result = this.targetCreator.join(
-            mergeSettings<any>(templateStructure, settings.overrides || {}),
-            sourceFiles);
+        const result = this.targetCreator.join(mergedSettings, sourceFiles);
 
         await this.fileWriter(settings.target, result);
     }

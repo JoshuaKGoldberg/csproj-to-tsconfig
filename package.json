@@ -11,7 +11,10 @@
     "url": "git+https://github.com/joshuakgoldberg/csproj-to-tsconfig.git"
   },
   "keywords": [
-    "csproj", "tsconfig", "msbuild", "typescript"
+    "csproj",
+    "tsconfig",
+    "msbuild",
+    "typescript"
   ],
   "author": {
     "name": "Josh Goldberg",
@@ -25,21 +28,22 @@
   "dependencies": {
     "mz": "^2.6.0",
     "strip-json-comments": "^2.0.1",
-    "yargs": "^7.0.2"
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@types/mz": "0.0.30",
-    "@types/node": "^7.0.4",
-    "@types/yargs": "^6.6.0",
-    "del": "^2.2.2",
+    "@types/mz": "0.0.31",
+    "@types/node": "^8.0.17",
+    "@types/strip-json-comments": "0.0.28",
+    "@types/yargs": "^8.0.1",
+    "del": "^3.0.0",
     "gulp": "^3.9.1",
-    "gulp-sourcemaps": "^2.4.0",
-    "gulp-tslint": "^7.0.1",
-    "gulp-typescript": "^3.1.4",
-    "merge2": "^1.0.3",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-tslint": "^8.1.1",
+    "gulp-typescript": "^3.2.1",
+    "merge2": "^1.1.0",
     "mustache": "^2.3.0",
-    "run-sequence": "^1.2.2",
-    "tslint": "^5.0.0",
-    "typescript": "^2.2.2"
+    "run-sequence": "^2.1.0",
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.2"
   }
 }
