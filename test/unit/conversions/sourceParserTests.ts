@@ -1,23 +1,8 @@
 import { expect } from "chai";
 import "mocha";
 
-import { IMSBuildReplacements, IMSBuildReplacer, SourceParser } from "../../../lib/conversions/sourceParser";
-
-const stubCsprojContents = (filePaths: string[]): string => {
-    const includes = filePaths
-        .map((filePath: string) => `<TypeScriptCompile Include="${filePath}" />`)
-        .join("\n        ");
-
-    return `
-    <xml/?>
-    <irrelevant />
-    <PropertyGroup>
-    </PropertyGroup>
-    <ItemGroup>
-        ${includes}
-    </ItemGroup>
-`;
-};
+import { IMSBuildReplacements, IMSBuildReplacer, parseCsprojSource } from "../../../lib/conversions/sourceParser";
+import { stubCsprojContents } from "../utils";
 
 const stubMsbuildReplacer = (transforms: { [i: string]: string }): IMSBuildReplacer =>
     (fileName: string) =>
@@ -30,10 +15,9 @@ describe("SourceParser", () => {
         it("gives no results without any includes", async () => {
             // Arrange
             const contents = stubCsprojContents([]);
-            const parser = new SourceParser();
 
             // Act
-            const parsed = parser.parse(contents);
+            const parsed = parseCsprojSource(contents);
 
             // Act
             expect(parsed).to.be.deep.equal([]);
@@ -46,10 +30,9 @@ describe("SourceParser", () => {
                 "definition.d.ts",
             ];
             const contents = stubCsprojContents(lines);
-            const parser = new SourceParser();
 
             // Act
-            const parsed = parser.parse(contents);
+            const parsed = parseCsprojSource(contents);
 
             // Act
             expect(parsed).to.be.deep.equal(lines);
@@ -63,13 +46,12 @@ describe("SourceParser", () => {
                 [original]: transformed,
             };
             const contents = stubCsprojContents([original]);
-            const parser = new SourceParser();
             const replacements: IMSBuildReplacements = {
                 files: stubMsbuildReplacer(fileTransforms),
             };
 
             // Act
-            const parsed = parser.parse(contents, replacements);
+            const parsed = parseCsprojSource(contents, replacements);
 
             // Act
             expect(parsed).to.be.deep.equal([transformed]);
@@ -82,7 +64,6 @@ describe("SourceParser", () => {
             const contents = stubCsprojContents([
                 `${original}.ts`,
             ]);
-            const parser = new SourceParser();
             const replacements: IMSBuildReplacements = {
                 items: stubMsbuildReplacer({
                     original: transformed,
@@ -90,7 +71,7 @@ describe("SourceParser", () => {
             };
 
             // Act
-            const parsed = parser.parse(contents, replacements);
+            const parsed = parseCsprojSource(contents, replacements);
 
             // Act
             expect(parsed).to.be.deep.equal([
@@ -105,7 +86,6 @@ describe("SourceParser", () => {
             const contents = stubCsprojContents([
                 `${original}.ts`,
             ]);
-            const parser = new SourceParser();
             const replacements: IMSBuildReplacements = {
                 properties: stubMsbuildReplacer({
                     original: transformed,
@@ -113,7 +93,7 @@ describe("SourceParser", () => {
             };
 
             // Act
-            const parsed = parser.parse(contents, replacements);
+            const parsed = parseCsprojSource(contents, replacements);
 
             // Act
             expect(parsed).to.be.deep.equal([
