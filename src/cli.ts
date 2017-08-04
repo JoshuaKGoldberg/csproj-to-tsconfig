@@ -1,7 +1,7 @@
 import * as yargs from "yargs";
 
 import { Runner } from "./runner";
-import { IRawConversionSettings, SettingsParser } from "./settingsParser";
+import { IRawConversionSettings, parseSettings } from "./settingsParser";
 import { StatusCode } from "./statusCode";
 
 const rawConversionSettings: IRawConversionSettings = yargs
@@ -14,12 +14,11 @@ const rawConversionSettings: IRawConversionSettings = yargs
     .argv as {} as IRawConversionSettings;
 
 const main = async (): Promise<number> => {
+    const conversionSettings = parseSettings(rawConversionSettings);
     const runner = new Runner({
         onError: console.error.bind(console),
         onLog: console.log.bind(console),
     });
-
-    const conversionSettings = new SettingsParser().parse(rawConversionSettings);
 
     return await runner.run(conversionSettings);
 };

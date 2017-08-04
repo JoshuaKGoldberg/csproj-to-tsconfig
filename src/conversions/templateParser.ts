@@ -7,24 +7,26 @@ import stripJsonComments = require("strip-json-comments");
 /**
  * Content structure for tsconfig.json files.
  */
-export interface ITemplateStructure {
+export type ITemplateStructure = object & {
     /**
      * Source file paths to include.
      */
     files: string[];
-}
+};
 
 /**
- * Parses tsconfig.json files.
+ * Parses a tsconfig.json file.
+ *
+ * @param contents   Contents of a tsconfig.json file.
+ * @returns The parsed structure of the file.
  */
-export class TemplateParser {
-    /**
-     * Parses a tsconfig.json file.
-     *
-     * @param contents   Contents of a tsconfig.json file.
-     * @returns The parsed structure of the file.
-     */
-    public intake(contents: string): ITemplateStructure {
-        return JSON.parse(stripJsonComments(contents));
-    }
-}
+export type ITemplateParser = (contents: string) => ITemplateStructure;
+
+/**
+ * Parses a tsconfig.json file.
+ *
+ * @param contents   Contents of a tsconfig.json file.
+ * @returns The parsed structure of the file.
+ */
+export const parseTsconfigTemplate = (contents: string): ITemplateStructure =>
+    JSON.parse(stripJsonComments(contents));
