@@ -2,7 +2,7 @@ import * as fs from "mz/fs";
 
 import { mergeSettings } from "./conversions/mergeSettings";
 import { IMSBuildReplacements, SourceParser } from "./conversions/sourceParser";
-import { TargetCreator } from "./conversions/targetCreator";
+import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
 import { TemplateParser } from "./conversions/templateParser";
 import { IFileReader } from "./files/fileReader";
 import { IFileWriter } from "./files/fileWriter";
@@ -29,7 +29,7 @@ export interface IConverterDependencies {
     /**
      * Joins source file paths into tsconfig.json templates.
      */
-    targetCreator?: TargetCreator;
+    targetCreator?: ITargetCreator;
 
     /**
      * Parses tsconfig.json files.
@@ -107,7 +107,7 @@ export class Converter {
             await fs.writeFile(fileName, contents);
         });
         this.sourceParser = dependencies.sourceParser || new SourceParser();
-        this.targetCreator = dependencies.targetCreator || new TargetCreator();
+        this.targetCreator = dependencies.targetCreator || createTargetTsconfig;
         this.templateParser = dependencies.templateParser || new TemplateParser();
     }
 
