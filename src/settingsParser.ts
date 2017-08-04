@@ -1,11 +1,11 @@
-import { IMSBuildReplacements, IMSBuildReplacer } from "./conversions/sourceParser";
+import { IMSBuildReplacer, IMSBuildReplacers } from "./conversions/sourceParser";
 import { IConversionSettings } from "./converter";
 
 /**
  * Maps for an MSBuild replacers.
  */
 type IReplacementSettings = {
-    [P in keyof IMSBuildReplacements]: Map<string, string>;
+    [P in keyof IMSBuildReplacers]: Map<string, string>;
 };
 
 /**
@@ -50,7 +50,7 @@ const createReplacementLookup = (replacements: Map<string, string>): IMSBuildRep
  * @param rawReplacements   Raw replacements from a CLI.
  * @returns MSBuild replacements.
  */
-const generateReplacements = (rawReplacements: string[]): IMSBuildReplacements => {
+export const generateKeyValueReplacements = (rawReplacements: string[]): IMSBuildReplacers => {
     const replacers: IReplacementSettings = {
         files: new Map<string, string>(),
         items: new Map<string, string>(),
@@ -91,7 +91,7 @@ export const parseSettings = (rawConversionSettings: IRawConversionSettings): IC
         ? [rawConversionSettings.replacement]
         : rawConversionSettings.replacement;
     const replacements = rawReplacements instanceof Array
-        ? generateReplacements(rawReplacements)
+        ? generateKeyValueReplacements(rawReplacements)
         : undefined;
 
     const settings = { ...(rawConversionSettings as IConversionSettings) };

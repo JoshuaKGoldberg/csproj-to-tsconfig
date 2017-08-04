@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import "mocha";
 
-import { IMSBuildReplacements, IMSBuildReplacer, parseCsprojSource } from "../../../lib/conversions/sourceParser";
+import { IMSBuildReplacer, IMSBuildReplacers, parseCsprojSource } from "../../../lib/conversions/sourceParser";
 import { stubCsprojContents } from "../utils";
 
 const stubMsbuildReplacer = (transforms: { [i: string]: string }): IMSBuildReplacer =>
@@ -46,7 +46,7 @@ describe("SourceParser", () => {
                 [original]: transformed,
             };
             const contents = stubCsprojContents([original]);
-            const replacements: IMSBuildReplacements = {
+            const replacements: IMSBuildReplacers = {
                 files: stubMsbuildReplacer(fileTransforms),
             };
 
@@ -64,7 +64,7 @@ describe("SourceParser", () => {
             const contents = stubCsprojContents([
                 `${original}.ts`,
             ]);
-            const replacements: IMSBuildReplacements = {
+            const replacements: IMSBuildReplacers = {
                 items: stubMsbuildReplacer({
                     original: transformed,
                 }),
@@ -86,7 +86,7 @@ describe("SourceParser", () => {
             const contents = stubCsprojContents([
                 `${original}.ts`,
             ]);
-            const replacements: IMSBuildReplacements = {
+            const replacements: IMSBuildReplacers = {
                 properties: stubMsbuildReplacer({
                     original: transformed,
                 }),

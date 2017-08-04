@@ -11,7 +11,9 @@ It will read the `TypeScriptCompile` include strings from the source `.csproj` a
 
 `csproj-to-tsconfig` provides both a CLI and an importable `Converter` clas.
 
-*Requires Node 7.6!*
+*Both require Node 7.6!*
+
+### CLI
 
 ```cmd
 npm install -g csproj-to-tsconfig
@@ -34,10 +36,10 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --templa
 Converting `./framework.csproj` to `./tsconfig.json` and replacing `$(OutputDirectory)` with `../lib`:
 
 ```
-csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replacement OutputDirectory=../lib
+csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replacement $(OutputDirectory)=../lib
 ```
 
-### Options
+#### Options
 
 <table>
     <thead>
@@ -56,7 +58,7 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replac
         <tr>
             <th><code>replacements</code></th>
             <td><string>string[]</string></td>
-            <td>MSBuild values to replace in raw source file paths, as<code>key=value</code> <em>(optional)</em>.</td>
+            <td>MSBuild values to replace in raw source file paths, as <code>key=value</code> <em>(optional)</em>.</td>
         </tr>
         <tr>
             <th><code>target</code></th>
@@ -70,6 +72,36 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replac
         </tr>
     </tbody>
 </table>
+
+### `Converter`
+
+`npm install --save csproj-to-tsconfig`
+
+```javascript
+import { Converter } from "csproj-to-tsconfig";
+
+// ...
+
+const converter = new Converter();
+
+await converter.convert({
+    csproj: "path/to/csproj",
+    target: "path/to/target/tsconfig.json",
+    template: "path/to/base/tsconfig.json"
+})
+```
+
+Unlike the key-value pairs in the CLI, replacement functions just take in values of their types, and output the transformed result.
+A `generateKeyValueReplacements` function is provided that can create a set of replacers for CLI-like inputs.
+
+```javascript
+generateKeyValueReplacements([
+    "foo=bar",
+    "@(baz)=qux",
+    "$(quux)=corge"
+])
+```
+
 
 
 ## Development

@@ -1,7 +1,7 @@
 import * as fs from "mz/fs";
 
 import { mergeSettings } from "./conversions/mergeSettings";
-import { IMSBuildReplacements, ISourceParser, parseCsprojSource } from "./conversions/sourceParser";
+import { IMSBuildReplacers, ISourceParser, parseCsprojSource } from "./conversions/sourceParser";
 import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
 import { ITemplateParser, parseTsconfigTemplate } from "./conversions/templateParser";
 import { IFileReader } from "./files/fileReader";
@@ -54,7 +54,7 @@ export interface IConversionSettings {
     /**
      * MSBuild values to replace in raw source file paths.
      */
-    replacements?: IMSBuildReplacements;
+    replacements?: IMSBuildReplacers;
 
     /**
      * File path to the target tsconfig.json file.

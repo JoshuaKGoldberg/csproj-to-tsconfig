@@ -1,6 +1,20 @@
-export interface IMSBuildReplacements {
+/**
+ * Replacers for each type of replaceable content.
+ */
+export interface IMSBuildReplacers {
+    /**
+     * Replacers for full file names, including extensions.
+     */
     files?: IMSBuildReplacer;
+
+    /**
+     * Replacers for ItemGroup values, excluding "@(" and ")".
+     */
     items?: IMSBuildReplacer;
+
+    /**
+     * Replacers for PropertyGroup values, excluding "$(" and ")".
+     */
     properties?: IMSBuildReplacer;
 }
 
@@ -16,7 +30,7 @@ export type IMSBuildReplacer = (value: string) => string;
  * @param replacer   Replaces PropertyGroup
  * @returns The .csproj's source file paths.
  */
-export type ISourceParser = (contents: string, replacements?: IMSBuildReplacements) => string[];
+export type ISourceParser = (contents: string, replacements?: IMSBuildReplacers) => string[];
 
 /**
  * Replaces out a type of MSBuild replacement logic from a raw file name.
@@ -56,7 +70,7 @@ const replaceMatchesWith = (fileName: string, matcher: RegExp, replacer: IMSBuil
  * @param replacements   Replacers for MSBuild logic.
  * @returns A usable file name from the line.
  */
-const parseFileLine = (rawLine: string, replacements: IMSBuildReplacements): string => {
+const parseFileLine = (rawLine: string, replacements: IMSBuildReplacers): string => {
     // tslint:disable-next-line:no-non-null-assertion
     const matches = /Include=('|")(.*(\.d\.ts|\.ts))/gi.exec(rawLine)!;
     let fileName = matches[2];
@@ -78,7 +92,7 @@ const parseFileLine = (rawLine: string, replacements: IMSBuildReplacements): str
  * @param replacer   Replaces PropertyGroup
  * @returns The .csproj's source file paths.
  */
-export const parseCsprojSource = (contents: string, replacements: IMSBuildReplacements = {}): string[] => {
+export const parseCsprojSource = (contents: string, replacements: IMSBuildReplacers = {}): string[] => {
     const lines = contents.match(/\<TypeScriptCompile Include=('|")(.*).ts('|")( )*(\/)*\>/gi);
     if (!lines) {
         return [];
