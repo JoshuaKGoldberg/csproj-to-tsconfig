@@ -2,6 +2,7 @@ import { expect } from "chai";
 import "mocha";
 
 import { createTargetTsconfig } from "../../../lib/conversions/targetCreator";
+import { ITemplateStructure } from "../../../lib/conversions/templateParser";
 
 describe("createTargetTsconfig", () => {
     const stubTemplateStructure = {
@@ -19,7 +20,7 @@ describe("createTargetTsconfig", () => {
         ];
 
         // Act
-        const target = createTargetTsconfig(stubTemplateStructure, sourceFiles);
+        const target = createTargetTsconfig(stubTemplateStructure as Partial<ITemplateStructure>, sourceFiles);
 
         // Assert
         expect(target).to.be.equal(`{

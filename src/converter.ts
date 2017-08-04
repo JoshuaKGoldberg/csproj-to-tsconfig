@@ -3,7 +3,7 @@ import * as fs from "mz/fs";
 import { mergeSettings } from "./conversions/mergeSettings";
 import { IMSBuildReplacements, SourceParser } from "./conversions/sourceParser";
 import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
-import { TemplateParser } from "./conversions/templateParser";
+import { ITemplateParser, parseTsconfigTemplate } from "./conversions/templateParser";
 import { IFileReader } from "./files/fileReader";
 import { IFileWriter } from "./files/fileWriter";
 
@@ -34,7 +34,7 @@ export interface IConverterDependencies {
     /**
      * Parses tsconfig.json files.
      */
-    templateParser?: TemplateParser;
+    templateParser?: ITemplateParser;
 }
 
 /**
@@ -89,12 +89,12 @@ export class Converter {
     /**
      * Joins source file paths into tsconfig.json templates.
      */
-    private readonly targetCreator: TargetCreator;
+    private readonly targetCreator: ITargetCreator;
 
     /**
      * Parses tsconfig.json files.
      */
-    private readonly templateParser: TemplateParser;
+    private readonly templateParser: ITemplateParser;
 
     /**
      * Initializes a new instance of the Converter class.
@@ -108,7 +108,7 @@ export class Converter {
         });
         this.sourceParser = dependencies.sourceParser || new SourceParser();
         this.targetCreator = dependencies.targetCreator || createTargetTsconfig;
-        this.templateParser = dependencies.templateParser || new TemplateParser();
+        this.templateParser = dependencies.templateParser || parseTsconfigTemplate;
     }
 
     /**
@@ -124,10 +124,10 @@ export class Converter {
         ]);
 
         const sourceFiles = this.sourceParser.parse(csprojContents, settings.replacements);
-        const templateStructure = this.templateParser.intake(templateContents);
+        const templateStructure = this.templateParser(templateContents);
         const mergedSettings = mergeSettings(templateStructure, settings.overrides || {});
 
-        const result = this.targetCreator.join(mergedSettings, sourceFiles);
+        const result = this.targetCreator(mergedSettings, sourceFiles);
 
         await this.fileWriter(settings.target, result);
     }
