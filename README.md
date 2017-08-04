@@ -9,6 +9,8 @@ It will read the `TypeScriptCompile` include strings from the source `.csproj` a
 
 ## Usage
 
+`csproj-to-tsconfig` provides both a CLI and an importable `Converter` clas.
+
 *Requires Node 7.6!*
 
 ```cmd

@@ -1,5 +1,12 @@
-import { IMSBuildReplacer } from "./conversions/sourceParser";
+import { IMSBuildReplacements, IMSBuildReplacer } from "./conversions/sourceParser";
 import { IConversionSettings } from "./converter";
+
+/**
+ * Maps for an MSBuild replacers.
+ */
+type IReplacementSettings = {
+    [P in keyof IMSBuildReplacements]: Map<string, string>;
+};
 
 /**
  * Raw conversion settings received from a CLI.
@@ -26,43 +33,72 @@ export interface IRawConversionSettings {
     template: string;
 }
 
-const generateReplacer = (rawReplacements: string[]): IMSBuildReplacer => {
-    const replacements = new Map<string, string>();
-
-    for (const rawReplacement of rawReplacements) {
-        const split = rawReplacement.split("=");
-
-        replacements.set(split[0], split[1]);
-    }
-
-    return (fileName: string) => replacements.has(fileName)
+/**
+ * Creates a replacer lookup over a replacements map.
+ *
+ * @param replacements   Replacements for values.
+ * @returns A lookup over the replacements map.
+ */
+const createReplacementLookup = (replacements: Map<string, string>): IMSBuildReplacer =>
+    (fileName: string) => replacements.has(fileName)
         ? replacements.get(fileName)! // tslint:disable-line:no-non-null-assertion
         : fileName;
+
+/**
+ * Creates replacement lookups for raw replacement lookups.
+ *
+ * @param rawReplacements   Raw replacements from a CLI.
+ * @returns MSBuild replacements.
+ */
+const generateReplacements = (rawReplacements: string[]): IMSBuildReplacements => {
+    const replacers: IReplacementSettings = {
+        files: new Map<string, string>(),
+        items: new Map<string, string>(),
+        properties: new Map<string, string>(),
+    };
+
+    for (const rawReplacement of rawReplacements) {
+        const [key, value] = rawReplacement.split("=");
+
+        if (key[0] === "$") {
+            replacers.properties.set(
+                key.substring("$(".length, key.length - ")".length),
+                value);
+        } else if (key[0] === "@") {
+            replacers.items.set(
+                key.substring("@(".length, key.length - ")".length),
+                value);
+        } else {
+            replacers.files.set(key, value);
+        }
+    }
+
+    return {
+        files: createReplacementLookup(replacers.files),
+        items: createReplacementLookup(replacers.items),
+        properties: createReplacementLookup(replacers.properties),
+    };
 };
 
 /**
  * Converts raw CLI settings to runtime settings.
+ *
+ * @param rawConversionSettings   Raw CLI settings.
+ * @returns The equivalent runtime settings.
  */
-export class SettingsParser {
-    /**
-     * Converts raw CLI settings to runtime settings.
-     *
-     * @param rawConversionSettings   Raw CLI settings.
-     * @returns The equivalent runtime settings.
-     */
-    public parse(rawConversionSettings: IRawConversionSettings): IConversionSettings {
-        const rawReplacements = typeof rawConversionSettings.replacement === "string"
-            ? [rawConversionSettings.replacement]
-            : rawConversionSettings.replacement;
-        const replacer = rawReplacements instanceof Array
-            ? generateReplacer(rawReplacements)
-            : undefined;
+export const parseSettings = (rawConversionSettings: IRawConversionSettings): IConversionSettings => {
+    const rawReplacements = typeof rawConversionSettings.replacement === "string"
+        ? [rawConversionSettings.replacement]
+        : rawConversionSettings.replacement;
+    const replacements = rawReplacements instanceof Array
+        ? generateReplacements(rawReplacements)
+        : undefined;
 
-        return {
-            ...(rawConversionSettings as IConversionSettings),
-            replacements: {
-                properties: replacer,
-            },
-        };
+    const settings = { ...(rawConversionSettings as IConversionSettings) };
+
+    if (replacements !== undefined) {
+        settings.replacements = replacements;
     }
-}
+
+    return settings;
+};
