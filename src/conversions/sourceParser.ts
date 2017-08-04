@@ -9,6 +9,23 @@ export interface IMSBuildReplacements {
  */
 export type IMSBuildReplacer = (value: string) => string;
 
+/**
+ * Parses source file paths from .csproj files.
+ *
+ * @param contents   Raw contents of a .csproj file.
+ * @param replacer   Replaces PropertyGroup
+ * @returns The .csproj's source file paths.
+ */
+export type ISourceParser = (contents: string, replacements?: IMSBuildReplacements) => string[];
+
+/**
+ * Replaces out a type of MSBuild replacement logic from a raw file name.
+ *
+ * @param fileName   Raw name of a file.
+ * @param matcher   Finds MSBuild logic in the name.
+ * @param replacer   Replaces the MSBuid logic with real contents.
+ * @returns A usable version of the file name.
+ */
 const replaceMatchesWith = (fileName: string, matcher: RegExp, replacer: IMSBuildReplacer | undefined): string => {
     if (replacer === undefined) {
         return fileName;
@@ -32,9 +49,16 @@ const replaceMatchesWith = (fileName: string, matcher: RegExp, replacer: IMSBuil
     return fileName;
 };
 
-const extractMatch = (line: string, replacements: IMSBuildReplacements): string => {
+/**
+ * Parses a file name out of a raw MSBuild line.
+ *
+ * @param rawLine   Raw line from an MSBuild file.
+ * @param replacements   Replacers for MSBuild logic.
+ * @returns A usable file name from the line.
+ */
+const parseFileLine = (rawLine: string, replacements: IMSBuildReplacements): string => {
     // tslint:disable-next-line:no-non-null-assertion
-    const matches = /Include=('|")(.*(\.d\.ts|\.ts))/gi.exec(line)!;
+    const matches = /Include=('|")(.*(\.d\.ts|\.ts))/gi.exec(rawLine)!;
     let fileName = matches[2];
 
     fileName = replaceMatchesWith(fileName, /\$\((.+)\)/gi, replacements.properties);
@@ -49,23 +73,16 @@ const extractMatch = (line: string, replacements: IMSBuildReplacements): string 
 
 /**
  * Parses source file paths from .csproj files.
+ *
+ * @param contents   Raw contents of a .csproj file.
+ * @param replacer   Replaces PropertyGroup
+ * @returns The .csproj's source file paths.
  */
-export class SourceParser {
-    /**
-     * Retrieves input file names from raw .csproj contents.
-     *
-     * @param contents   Raw contents of a .csproj file.
-     * @param replacer   Replaces PropertyGroup
-     * @returns The .csproj's source file paths.
-     */
-    public parse(contents: string, replacements: IMSBuildReplacements = {}): string[] {
-        const lines = contents.match(/\<TypeScriptCompile Include=('|")(.*).ts('|")( )*(\/)*\>/gi);
-        if (!lines) {
-            return [];
-        }
-
-        return lines
-            .map((line) => extractMatch(line, replacements))
-            .filter((line) => line.indexOf("$") === -1);
+export const parseCsprojSource = (contents: string, replacements: IMSBuildReplacements = {}): string[] => {
+    const lines = contents.match(/\<TypeScriptCompile Include=('|")(.*).ts('|")( )*(\/)*\>/gi);
+    if (!lines) {
+        return [];
     }
-}
+
+    return lines.map((line) => parseFileLine(line, replacements));
+};

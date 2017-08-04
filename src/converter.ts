@@ -1,7 +1,7 @@
 import * as fs from "mz/fs";
 
 import { mergeSettings } from "./conversions/mergeSettings";
-import { IMSBuildReplacements, SourceParser } from "./conversions/sourceParser";
+import { IMSBuildReplacements, ISourceParser, parseCsprojSource } from "./conversions/sourceParser";
 import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
 import { ITemplateParser, parseTsconfigTemplate } from "./conversions/templateParser";
 import { IFileReader } from "./files/fileReader";
@@ -24,7 +24,7 @@ export interface IConverterDependencies {
     /**
      * Parses source file paths from .csproj files.
      */
-    sourceParser?: SourceParser;
+    sourceParser?: ISourceParser;
 
     /**
      * Joins source file paths into tsconfig.json templates.
@@ -84,7 +84,7 @@ export class Converter {
     /**
      * Parses source file paths from .csproj files.
      */
-    private readonly sourceParser: SourceParser;
+    private readonly sourceParser: ISourceParser;
 
     /**
      * Joins source file paths into tsconfig.json templates.
@@ -106,7 +106,7 @@ export class Converter {
         this.fileWriter = dependencies.fileWriter || (async (fileName, contents) => {
             await fs.writeFile(fileName, contents);
         });
-        this.sourceParser = dependencies.sourceParser || new SourceParser();
+        this.sourceParser = dependencies.sourceParser || parseCsprojSource;
         this.targetCreator = dependencies.targetCreator || createTargetTsconfig;
         this.templateParser = dependencies.templateParser || parseTsconfigTemplate;
     }
@@ -123,7 +123,7 @@ export class Converter {
             this.fileReader(settings.template),
         ]);
 
-        const sourceFiles = this.sourceParser.parse(csprojContents, settings.replacements);
+        const sourceFiles = this.sourceParser(csprojContents, settings.replacements);
         const templateStructure = this.templateParser(templateContents);
         const mergedSettings = mergeSettings(templateStructure, settings.overrides || {});
 
