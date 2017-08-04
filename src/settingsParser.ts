@@ -1,4 +1,4 @@
-import { IMSBuildReplacements } from "./conversions/sourceParser";
+import { IMSBuildReplacer } from "./conversions/sourceParser";
 import { IConversionSettings } from "./converter";
 
 /**
@@ -26,6 +26,20 @@ export interface IRawConversionSettings {
     template: string;
 }
 
+const generateReplacer = (rawReplacements: string[]): IMSBuildReplacer => {
+    const replacements = new Map<string, string>();
+
+    for (const rawReplacement of rawReplacements) {
+        const split = rawReplacement.split("=");
+
+        replacements.set(split[0], split[1]);
+    }
+
+    return (fileName: string) => replacements.has(fileName)
+        ? replacements.get(fileName)! // tslint:disable-line:no-non-null-assertion
+        : fileName;
+};
+
 /**
  * Converts raw CLI settings to runtime settings.
  */
@@ -37,22 +51,18 @@ export class SettingsParser {
      * @returns The equivalent runtime settings.
      */
     public parse(rawConversionSettings: IRawConversionSettings): IConversionSettings {
-        const replacements: IMSBuildReplacements = {};
         const rawReplacements = typeof rawConversionSettings.replacement === "string"
             ? [rawConversionSettings.replacement]
             : rawConversionSettings.replacement;
-
-        if (rawReplacements) {
-            for (const rawReplacement of rawReplacements) {
-                const split = rawReplacement.split("=");
-
-                replacements[split[0]] = split[1];
-            }
-        }
+        const replacer = rawReplacements instanceof Array
+            ? generateReplacer(rawReplacements)
+            : undefined;
 
         return {
             ...(rawConversionSettings as IConversionSettings),
-            replacements,
+            replacements: {
+                properties: replacer,
+            },
         };
     }
 }

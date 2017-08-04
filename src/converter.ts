@@ -123,7 +123,7 @@ export class Converter {
             this.fileReader(settings.template),
         ]);
 
-        const sourceFiles = this.sourceParser.intake(csprojContents, settings.replacements);
+        const sourceFiles = this.sourceParser.parse(csprojContents, settings.replacements);
         const templateStructure = this.templateParser.intake(templateContents);
         const mergedSettings = mergeSettings(templateStructure, settings.overrides || {});
 

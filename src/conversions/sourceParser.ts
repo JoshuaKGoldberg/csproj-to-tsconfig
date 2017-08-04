@@ -1,26 +1,51 @@
-/**
- * MSBuild values to replace in raw source file paths.
- */
 export interface IMSBuildReplacements {
-    [i: string]: string | IMSBuildReplacer;
+    files?: IMSBuildReplacer;
+    items?: IMSBuildReplacer;
+    properties?: IMSBuildReplacer;
 }
 
 /**
- * Replaces a raw source file path with a computed value.
+ * Converts MSBuild PropertyGroup values.
  */
-export type IMSBuildReplacer = (sourceFilePath: string) => string;
+export type IMSBuildReplacer = (value: string) => string;
 
-/**
- * Converts a source file path to a replaced value.
- *
- * @param line   Line with a raw source file path.
- * @param replacer   New value or a computer to generate it.
- * @returns The equivalent replacement for the line.
- */
-const getReplacement = (line: string, replacer: string | IMSBuildReplacer): string =>
-    typeof replacer === "string"
-        ? replacer
-        : replacer(line);
+const replaceMatchesWith = (fileName: string, matcher: RegExp, replacer: IMSBuildReplacer | undefined): string => {
+    if (replacer === undefined) {
+        return fileName;
+    }
+
+    let result: RegExpMatchArray | null;
+    while (true) {
+        result = matcher.exec(fileName);
+        if (!result) {
+            break;
+        }
+
+        // A @() matcher, for example, will give result = ["@(abc)", "abc"]
+        fileName = [
+            fileName.substring(0, result.index),
+            replacer(result[1]),
+            fileName.substring((result.index || 0) + result[0].length),
+        ].join("");
+    }
+
+    return fileName;
+};
+
+const extractMatch = (line: string, replacements: IMSBuildReplacements): string => {
+    // tslint:disable-next-line:no-non-null-assertion
+    const matches = /Include=('|")(.*(\.d\.ts|\.ts))/gi.exec(line)!;
+    let fileName = matches[2];
+
+    fileName = replaceMatchesWith(fileName, /\$\((.+)\)/gi, replacements.properties);
+    fileName = replaceMatchesWith(fileName, /\@\((.+)\)/gi, replacements.items);
+
+    if (replacements.files !== undefined) {
+        fileName = replacements.files(fileName);
+    }
+
+    return fileName;
+};
 
 /**
  * Parses source file paths from .csproj files.
@@ -30,27 +55,17 @@ export class SourceParser {
      * Retrieves input file names from raw .csproj contents.
      *
      * @param contents   Raw contents of a .csproj file.
-     * @param replacements   MSBuild values to replace in raw source file paths.
+     * @param replacer   Replaces PropertyGroup
      * @returns The .csproj's source file paths.
      */
-    public intake(contents: string, replacements: IMSBuildReplacements = {}): string[] {
+    public parse(contents: string, replacements: IMSBuildReplacements = {}): string[] {
         const lines = contents.match(/\<TypeScriptCompile Include=('|")(.*).ts('|")( )*(\/)*\>/gi);
-
         if (!lines) {
             return [];
         }
 
         return lines
-            .map((line) => {
-                for (const key in replacements) {
-                    line = line.replace(new RegExp(`\\$\\(${key}\\)`, "gi"), getReplacement(line, replacements[key]));
-                }
-
-                return line;
-            })
-            .filter((line) => line.indexOf("$") === -1)
-            .map((line) => line
-                .substring(line.indexOf('"') + 1, line.lastIndexOf('"'))
-                .replace(/\\/g, "/"));
+            .map((line) => extractMatch(line, replacements))
+            .filter((line) => line.indexOf("$") === -1);
     }
 }

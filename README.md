@@ -54,7 +54,7 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replac
         <tr>
             <th><code>replacements</code></th>
             <td><string>string[]</string></td>
-            <td>MSBuild values to replace in raw source file paths, as <code>key=value</code> <em>(optional)</em>.</td>
+            <td>MSBuild values to replace in raw source file paths, as<code>key=value</code> <em>(optional)</em>.</td>
         </tr>
         <tr>
             <th><code>target</code></th>
