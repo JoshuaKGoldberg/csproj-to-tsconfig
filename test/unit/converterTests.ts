@@ -31,6 +31,12 @@ const stubConversionSettings = (overrides: Partial<IConversionSettings> = {}) =>
     ...overrides,
 });
 
+const stubReplacer = (replacements: { [i: string]: string }) =>
+    (fileName: string) =>
+        replacements[fileName] === undefined
+            ? fileName
+            : replacements[fileName];
+
 describe("Converter", () => {
     describe("convert", () => {
         it("parses a single file", async () => {
@@ -52,6 +58,48 @@ describe("Converter", () => {
     "compilerOptions": {},
     "files": [
         "wat.ts"
+    ]
+}`);
+        });
+
+        it("parses file, ItemGroup, and PropertyGroup replacements", async () => {
+            // Arrange
+            const { converter, getOutput } = stubConverter({
+                [stubCsprojName]: stubCsprojContents([
+                    "MyFile.ts",
+                    "MyDefinitionFile.d.ts",
+                    "@(MyItem).ts",
+                    "$(MyProperty).ts",
+                ]),
+                [stubTemplateName]: stubTemplateContents(),
+            });
+            const conversionSettings = stubConversionSettings({
+                replacements: {
+                    files: stubReplacer({
+                        "MyDefinitionFile.d.ts": "OutputDefinitionFile.d.ts",
+                        "MyFile.ts": "OutputFile.ts",
+                    }),
+                    items: stubReplacer({
+                        MyItem: "OutputItem",
+                    }),
+                    properties: stubReplacer({
+                        MyProperty: "OutputProperty",
+                    }),
+                },
+            });
+
+            // Act
+            await converter.convert(conversionSettings);
+            const output = getOutput();
+
+            // Assert
+            expect(output).to.be.equal(`{
+    "compilerOptions": {},
+    "files": [
+        "OutputFile.ts",
+        "OutputDefinitionFile.d.ts",
+        "OutputItem.ts",
+        "OutputProperty.ts"
     ]
 }`);
         });
