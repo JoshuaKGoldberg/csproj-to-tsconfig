@@ -1,11 +1,11 @@
 {
   "name": "csproj-to-tsconfig",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Converts .csproj files with TypeScript includes to their tsconfig.json equivalents.",
   "bin": {
     "csproj-to-tsconfig": "./bin/csproj-to-tsconfig"
   },
-  "main": "./lib/cli.js",
+  "main": "./lib/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/joshuakgoldberg/csproj-to-tsconfig.git"
