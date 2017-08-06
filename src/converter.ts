@@ -112,7 +112,7 @@ export class Converter {
     }
 
     /**
-     * Converts a .csproj file to its tsconfig.json.json equivalent.
+     * Converts a .csproj file to its tsconfig.json equivalent.
      *
      * @param settings   Settings for conversion.
      * @returns A Promise for completing the conversion.
