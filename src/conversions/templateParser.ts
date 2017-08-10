@@ -5,7 +5,7 @@ import stripJsonComments = require("strip-json-comments");
 /* tslint:enable */
 
 /**
- * Content structure for tsconfig.json files.
+ * Content structure for tsconfig files.
  */
 export type ITemplateStructure = object & {
     /**
@@ -15,17 +15,17 @@ export type ITemplateStructure = object & {
 };
 
 /**
- * Parses a tsconfig.json file.
+ * Parses a tsconfig file.
  *
- * @param contents   Contents of a tsconfig.json file.
+ * @param contents   Contents of a tsconfig file.
  * @returns The parsed structure of the file.
  */
 export type ITemplateParser = (contents: string) => ITemplateStructure;
 
 /**
- * Parses a tsconfig.json file.
+ * Parses a tsconfig file.
  *
- * @param contents   Contents of a tsconfig.json file.
+ * @param contents   Contents of a tsconfig file.
  * @returns The parsed structure of the file.
  */
 export const parseTsconfigTemplate = (contents: string): ITemplateStructure =>

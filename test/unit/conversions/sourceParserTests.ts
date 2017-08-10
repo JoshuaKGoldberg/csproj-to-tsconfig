@@ -35,7 +35,10 @@ describe("SourceParser", () => {
             const parsed = parseCsprojSource(contents);
 
             // Act
-            expect(parsed).to.be.deep.equal(lines);
+            expect(parsed).to.be.deep.equal([
+                "./file.ts",
+                "./definition.d.ts",
+            ]);
         });
 
         it("replaces a file name", () => {
@@ -54,7 +57,9 @@ describe("SourceParser", () => {
             const parsed = parseCsprojSource(contents, replacements);
 
             // Act
-            expect(parsed).to.be.deep.equal([transformed]);
+            expect(parsed).to.be.deep.equal([
+                `./${transformed}`,
+            ]);
         });
 
         it("replaces an ItemGroup include", () => {
@@ -75,7 +80,7 @@ describe("SourceParser", () => {
 
             // Act
             expect(parsed).to.be.deep.equal([
-                `${transformed}.ts`,
+                `./${transformed}.ts`,
             ]);
         });
 
@@ -97,7 +102,7 @@ describe("SourceParser", () => {
 
             // Act
             expect(parsed).to.be.deep.equal([
-                `${transformed}.ts`,
+                `./${transformed}.ts`,
             ]);
         });
     });
