@@ -1,6 +1,8 @@
 import * as fs from "mz/fs";
+import * as path from "path";
 
 import { mergeSettings } from "./conversions/mergeSettings";
+import { createReferencesFile, IReferencesFileSettings } from "./conversions/referencesFileCreator";
 import { IMSBuildReplacers, ISourceParser, parseCsprojSource } from "./conversions/sourceParser";
 import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
 import { ITemplateParser, parseTsconfigTemplate } from "./conversions/templateParser";
@@ -50,6 +52,11 @@ export interface IConversionSettings {
      * Any overrides to copy onto the tsconfig.json structure.
      */
     overrides?: object;
+
+    /**
+     * Settings to generate a /// references file, if any.
+     */
+    referencesFile?: IReferencesFileSettings;
 
     /**
      * MSBuild values to replace in raw source file paths.
@@ -130,5 +137,11 @@ export class Converter {
         const result = this.targetCreator(mergedSettings, sourceFiles);
 
         await this.fileWriter(settings.target, result);
+
+        if (settings.referencesFile !== undefined) {
+            await this.fileWriter(
+                path.join(path.dirname(settings.target), settings.referencesFile.fileName),
+                createReferencesFile(sourceFiles, new Date(), settings.referencesFile));
+        }
     }
 }

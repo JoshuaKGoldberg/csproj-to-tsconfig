@@ -1,3 +1,5 @@
+import * as path from "path";
+
 /**
  * Replacers for each type of replaceable content.
  */
@@ -80,6 +82,11 @@ const parseFileLine = (rawLine: string, replacements: IMSBuildReplacers): string
 
     if (replacements.files !== undefined) {
         fileName = replacements.files(fileName);
+    }
+
+    fileName = fileName.replace(/\\/g, "/");
+    if (!path.isAbsolute(fileName) && fileName[0] !== ".") {
+        fileName = `./${fileName}`;
     }
 
     return fileName;

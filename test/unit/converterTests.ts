@@ -57,7 +57,7 @@ describe("Converter", () => {
             expect(output).to.be.equal(`{
     "compilerOptions": {},
     "files": [
-        "wat.ts"
+        "./wat.ts"
     ]
 }`);
         });
@@ -96,10 +96,10 @@ describe("Converter", () => {
             expect(output).to.be.equal(`{
     "compilerOptions": {},
     "files": [
-        "OutputFile.ts",
-        "OutputDefinitionFile.d.ts",
-        "OutputItem.ts",
-        "OutputProperty.ts"
+        "./OutputFile.ts",
+        "./OutputDefinitionFile.d.ts",
+        "./OutputItem.ts",
+        "./OutputProperty.ts"
     ]
 }`);
         });
