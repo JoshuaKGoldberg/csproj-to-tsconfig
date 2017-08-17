@@ -46,7 +46,7 @@ export interface IConversionSettings {
 }
 
 /**
- * Converts .csproj files to their tsconfig.json.json equivalents.
+ * Converts .csproj files to their references and/or tsconfig equivalent(s).
  */
 export class Converter {
     /**
@@ -83,7 +83,7 @@ export class Converter {
     }
 
     /**
-     * Converts a .csproj file to its tsconfig.json equivalent.
+     * Converts a .csproj file to its references and/or tsconfig equivalent(s).
      *
      * @param settings   Settings for conversion.
      * @returns A Promise for completing the conversion.

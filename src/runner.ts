@@ -16,7 +16,7 @@ export const argNames = {
  */
 export interface IRunnerDependencies {
     /**
-     * Converts .csproj files to their .tsconfig.json equivalents.
+     * Converts .csproj files to their references and/or tsconfig equivalent(s)
      */
     converter?: Converter;
 
@@ -47,7 +47,7 @@ const ensureFileExists = async (errors: string[], filePath: string, fileSettings
  */
 export class Runner {
     /**
-     * Converts .csproj files to their .tsconfig.json equivalents.
+     * Converts .csproj files to their references and/or tsconfig equivalent(s)
      */
     private readonly converter: Converter;
 
