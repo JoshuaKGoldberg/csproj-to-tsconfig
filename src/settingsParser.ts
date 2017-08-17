@@ -20,6 +20,21 @@ export interface IRawConversionSettings {
     csproj: string;
 
     /**
+     * File path to the target .tsconfig file.
+     */
+    target?: string;
+
+    /**
+     * File path to the template .tsconfig file.
+     */
+    template?: string;
+
+    /**
+     * Whether to add a timestamp comment at the top of generated files.
+     */
+    timestamp?: boolean;
+
+    /**
      * File path to the references file, if any.
      */
     reference?: string;
@@ -28,16 +43,6 @@ export interface IRawConversionSettings {
      * key=value MSBuild pairs to replace in raw source file paths.
      */
     replacement?: string | string[];
-
-    /**
-     * File path to the target .tsconfig file.
-     */
-    target: string;
-
-    /**
-     * File path to the template .tsconfig file.
-     */
-    template: string;
 }
 
 /**
@@ -105,14 +110,18 @@ export const parseSettings = (rawConversionSettings: IRawConversionSettings): IC
         ? undefined
         : {
             fileName: rawConversionSettings.reference,
+            includeTimestamp: rawConversionSettings.timestamp,
             replacements,
         };
 
-    const targetTsconfig: IExternalTsconfigFileCreationSettings = {
-        fileName: rawConversionSettings.target,
-        replacements,
-        templateTsconfig: rawConversionSettings.template,
-    };
+    const targetTsconfig: IExternalTsconfigFileCreationSettings | undefined = rawConversionSettings.target === undefined
+        ? undefined
+        : {
+            fileName: rawConversionSettings.target,
+            includeTimestamp: rawConversionSettings.timestamp,
+            replacements,
+            templateTsconfig: rawConversionSettings.template,
+        };
 
     return {
         csproj: rawConversionSettings.csproj,

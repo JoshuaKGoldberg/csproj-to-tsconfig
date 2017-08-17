@@ -31,10 +31,10 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json
 
 You can also specify a `--template` file path to a separate `tsconfig.json`-like file to serve as a template for the generated output file.
 
-Converting `./framework.csproj` to `./tsconfig.json` with `tsconfig.base.json` as a template for settings:
+Converting `./framework.csproj` to `./tsconfig.json` with `./tsconfig.base.json` as a template for settings:
 
 ```
-csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --template ../tsconfig.base.json
+csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --template ./tsconfig.base.json
 ```
 
 Add `--timestamp` to include a timestamp comment at the top of generated files.
