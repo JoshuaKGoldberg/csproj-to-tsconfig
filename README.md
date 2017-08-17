@@ -9,7 +9,7 @@ It will read the `TypeScriptCompile` include strings from the source `.csproj` a
 
 ## Usage
 
-`csproj-to-tsconfig` provides both a CLI and an importable `Converter` clas.
+`csproj-to-tsconfig` provides a CLI and an importable `Converter` clas.
 
 *Both require Node 7.6!*
 
@@ -54,6 +54,11 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replac
             <th><code>csproj</code></th>
             <td><string>string</string></td>
             <td>File path to the source .csproj file.</td>
+        </tr>
+        <tr>
+            <th><code>references</code></th>
+            <td><string>string</string></td>
+            <td>MSBuild values to replace in raw source file paths, as <code>key=value</code> <em>(optional)</em>.</td>
         </tr>
         <tr>
             <th><code>replacements</code></th>

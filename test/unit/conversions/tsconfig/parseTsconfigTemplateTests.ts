@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import "mocha";
 
-import { parseTsconfigTemplate } from "../../../lib/conversions/templateParser";
+import { parseTsconfigTemplate } from "../../../../lib/conversions/tsconfig/parseTsconfigTemplate";
 
 describe("parseTsconfigTemplate", () => {
     it("retrieves a template from contents", async () => {

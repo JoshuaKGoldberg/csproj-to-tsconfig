@@ -15,7 +15,15 @@ describe("parseSettings", () => {
         const parsed = parseSettings(stubRawSettings);
 
         // Assert
-        expect(parsed).to.be.deep.equal(stubRawSettings);
+        expect(parsed).to.be.deep.equal({
+            csproj: "directory/project.csproj",
+            targetReferences: undefined,
+            targetTsconfig: {
+                fileName: "output/tsconfig.json",
+                replacements: undefined,
+                templateTsconfig: "input/base.json",
+            },
+        });
     });
 
     it("parses a string file replacement", () => {
@@ -25,7 +33,7 @@ describe("parseSettings", () => {
             replacement: "abc=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.files!("abc");
         // tslint:enable no-non-null-assertion
 
@@ -43,7 +51,7 @@ describe("parseSettings", () => {
             ],
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const files = replacements.files!;
         // tslint:enable no-non-null-assertion
         const replaced = [
@@ -62,7 +70,7 @@ describe("parseSettings", () => {
             replacement: "@(abc)=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.items!("abc");
         // tslint:enable no-non-null-assertion
 
@@ -77,7 +85,7 @@ describe("parseSettings", () => {
             replacement: "$(abc)=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.properties!("abc");
         // tslint:enable no-non-null-assertion
 

@@ -29,7 +29,7 @@ const override = <T>(target: T, source: T): void => {
  * @param source   Donor settings.
  * @returns Deeply merged settings.
  */
-export const mergeSettings = <T>(target: Partial<T>, source: Partial<T>): T => {
+export const mergeSettings = <T>(target: Partial<T>, source: Partial<T> = {}): T => {
     const output: Partial<T> = {};
 
     override(output, target);

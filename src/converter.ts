@@ -1,13 +1,9 @@
 import * as fs from "mz/fs";
-import * as path from "path";
 
-import { mergeSettings } from "./conversions/mergeSettings";
-import { createReferencesFile, IReferencesFileSettings } from "./conversions/referencesFileCreator";
-import { IMSBuildReplacers, ISourceParser, parseCsprojSource } from "./conversions/sourceParser";
-import { createTargetTsconfig, ITargetCreator } from "./conversions/targetCreator";
-import { ITemplateParser, parseTsconfigTemplate } from "./conversions/templateParser";
-import { IFileReader } from "./files/fileReader";
-import { IFileWriter } from "./files/fileWriter";
+import { IOutputFileCreationSettings } from "./conversions/conversionService";
+import { ReferencesConversionService } from "./conversions/references/referencesService";
+import { IExternalTsconfigFileCreationSettings, TsconfigConversionService } from "./conversions/tsconfig/tsconfigService";
+import { IFileReader, IFileWriter } from "./index";
 
 /**
  * Dependencies to initialize a new Converter.
@@ -16,27 +12,17 @@ export interface IConverterDependencies {
     /**
      * Reads files as strings.
      */
-    fileReader?: IFileReader;
+    fileReader: IFileReader;
 
     /**
      * Writes strings to files.
      */
-    fileWriter?: IFileWriter;
+    fileWriter: IFileWriter;
 
     /**
-     * Parses source file paths from .csproj files.
+     * @returns The current date.
      */
-    sourceParser?: ISourceParser;
-
-    /**
-     * Joins source file paths into tsconfig.json templates.
-     */
-    targetCreator?: ITargetCreator;
-
-    /**
-     * Parses tsconfig.json files.
-     */
-    templateParser?: ITemplateParser;
+    getDate: () => Date;
 }
 
 /**
@@ -49,29 +35,14 @@ export interface IConversionSettings {
     csproj: string;
 
     /**
-     * Any overrides to copy onto the tsconfig.json structure.
-     */
-    overrides?: object;
-
-    /**
      * Settings to generate a /// references file, if any.
      */
-    referencesFile?: IReferencesFileSettings;
+    targetReferences?: IOutputFileCreationSettings;
 
     /**
-     * MSBuild values to replace in raw source file paths.
+     * Settings to generate a tsconfig file, if any.
      */
-    replacements?: IMSBuildReplacers;
-
-    /**
-     * File path to the target tsconfig.json file.
-     */
-    target: string;
-
-    /**
-     * File path to the template tsconfig.json file.
-     */
-    template: string;
+    targetTsconfig?: IExternalTsconfigFileCreationSettings;
 }
 
 /**
@@ -79,43 +50,36 @@ export interface IConversionSettings {
  */
 export class Converter {
     /**
-     * Reads files as strings.
+     * Dependencies used for initialiation.
      */
-    private readonly fileReader: IFileReader;
+    private readonly dependencies: IConverterDependencies;
 
     /**
-     * Writes strings to files.
+     * Generates output references files from csproj sources.
      */
-    private readonly fileWriter: IFileWriter;
+    private readonly referencesConverter: ReferencesConversionService;
 
     /**
-     * Parses source file paths from .csproj files.
+     * Generates output tsconfig files from csproj sources.
      */
-    private readonly sourceParser: ISourceParser;
-
-    /**
-     * Joins source file paths into tsconfig.json templates.
-     */
-    private readonly targetCreator: ITargetCreator;
-
-    /**
-     * Parses tsconfig.json files.
-     */
-    private readonly templateParser: ITemplateParser;
+    private readonly tsconfigConverter: TsconfigConversionService;
 
     /**
      * Initializes a new instance of the Converter class.
      *
      * @param dependencies   Dependencies to be used for initialization.
      */
-    public constructor(dependencies: IConverterDependencies = {}) {
-        this.fileReader = dependencies.fileReader || (async (fileName) => (await fs.readFile(fileName)).toString());
-        this.fileWriter = dependencies.fileWriter || (async (fileName, contents) => {
-            await fs.writeFile(fileName, contents);
-        });
-        this.sourceParser = dependencies.sourceParser || parseCsprojSource;
-        this.targetCreator = dependencies.targetCreator || createTargetTsconfig;
-        this.templateParser = dependencies.templateParser || parseTsconfigTemplate;
+    public constructor(dependencies: Partial<IConverterDependencies> = {}) {
+        this.dependencies = {
+            fileReader: dependencies.fileReader || (async (fileName) => (await fs.readFile(fileName)).toString()),
+            fileWriter: dependencies.fileWriter || (async (fileName, contents) => {
+                await fs.writeFile(fileName, contents);
+            }),
+            getDate: dependencies.getDate || (() => new Date()),
+        };
+
+        this.referencesConverter = new ReferencesConversionService(this.dependencies);
+        this.tsconfigConverter = new TsconfigConversionService(this.dependencies);
     }
 
     /**
@@ -125,23 +89,25 @@ export class Converter {
      * @returns A Promise for completing the conversion.
      */
     public async convert(settings: IConversionSettings): Promise<void> {
-        const [csprojContents, templateContents] = await Promise.all([
-            this.fileReader(settings.csproj),
-            this.fileReader(settings.template),
-        ]);
+        const csprojContents = await this.dependencies.fileReader(settings.csproj);
+        const tasks: Promise<void>[] = [];
 
-        const sourceFiles = this.sourceParser(csprojContents, settings.replacements);
-        const templateStructure = this.templateParser(templateContents);
-        const mergedSettings = mergeSettings(templateStructure, settings.overrides || {});
-
-        const result = this.targetCreator(mergedSettings, sourceFiles);
-
-        await this.fileWriter(settings.target, result);
-
-        if (settings.referencesFile !== undefined) {
-            await this.fileWriter(
-                path.join(path.dirname(settings.target), settings.referencesFile.fileName),
-                createReferencesFile(sourceFiles, new Date(), settings.referencesFile));
+        if (settings.targetReferences !== undefined) {
+            tasks.push(
+                this.referencesConverter.convert({
+                    csprojContents,
+                    output: settings.targetReferences,
+                }));
         }
+
+        if (settings.targetTsconfig !== undefined) {
+            tasks.push(
+                this.tsconfigConverter.convert({
+                    csprojContents,
+                    output: settings.targetTsconfig,
+                }));
+        }
+
+        await Promise.all(tasks);
     }
 }

@@ -82,10 +82,6 @@ export class Runner {
      * @returns Status from attempting to run the program.
      */
     public async run(rawSettings: Partial<IConversionSettings>): Promise<StatusCode> {
-        if (!rawSettings.template) {
-            rawSettings.template = rawSettings.target;
-        }
-
         const settings = this.ensureSettingsExist(rawSettings);
         if (settings === undefined) {
             return Promise.resolve(StatusCode.MissingArguments);
@@ -110,7 +106,6 @@ export class Runner {
         const errors: string[] = [];
 
         ensureSettingExists(errors, settings, "csproj");
-        ensureSettingExists(errors, settings, "target");
 
         if (errors.length === 0) {
             return settings as IConversionSettings;
@@ -132,10 +127,7 @@ export class Runner {
     private async ensureFilesExist(settings: IConversionSettings): Promise<boolean> {
         const errors: string[] = [];
 
-        await Promise.all([
-            ensureFileExists(errors, settings.csproj, "csproj"),
-            ensureFileExists(errors, settings.template, "template"),
-        ]);
+        await ensureFileExists(errors, settings.csproj, "csproj");
 
         if (errors.length === 0) {
             return true;
