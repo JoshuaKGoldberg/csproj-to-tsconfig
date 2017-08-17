@@ -59,6 +59,7 @@ describe("parseSettings", () => {
             csproj: "directory/project.csproj",
             targetReferences: {
                 fileName: "output/reference.ts",
+                includeTimestamp: undefined,
                 replacements: undefined,
             },
             targetTsconfig: undefined,
