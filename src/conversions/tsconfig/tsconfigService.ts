@@ -37,9 +37,9 @@ export interface IExternalTsconfigFileCreationSettings extends IOutputFileCreati
     overrides?: {};
 
     /**
-     * Path to a template tsconfig file to merge settings onto.
+     * Path to a template tsconfig file to merge settings onto, if not the target fileName.
      */
-    templateTsconfig: string;
+    templateTsconfig?: string;
 }
 
 /**
@@ -76,7 +76,11 @@ export class TsconfigConversionService {
      */
     public async convert(settings: ITsconfigConversionServiceSettings): Promise<void> {
         const sourceFiles = parseCsprojSource(settings.csprojContents, settings.output.replacements);
-        const templateStructure = parseTsconfigTemplate(await this.dependencies.fileReader(settings.output.templateTsconfig));
+        const templateTsconfig = settings.output.templateTsconfig === undefined
+            ? settings.output.fileName
+            : settings.output.templateTsconfig;
+
+        const templateStructure = parseTsconfigTemplate(await this.dependencies.fileReader(templateTsconfig));
         const mergedSettings = mergeSettings(templateStructure, settings.output.overrides);
 
         const result = this.createTargetTsconfig(mergedSettings, sourceFiles, settings.output);

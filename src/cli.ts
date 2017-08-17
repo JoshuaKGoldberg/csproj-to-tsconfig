@@ -11,7 +11,7 @@ const rawConversionSettings: IRawConversionSettings = yargs
     .command("replacement", "key=value MSBuild pairs to replace in raw source file paths.")
     .command("target", "File path to the target tsconfig.json file.")
     .command("template", "File path to the template tsconfig.json file, if not <target>.")
-    .demandOption(["csproj", "target"])
+    .demandOption(["csproj"])
     .argv as {} as IRawConversionSettings;
 
 const main = async (): Promise<number> => {

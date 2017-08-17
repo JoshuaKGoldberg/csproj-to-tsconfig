@@ -78,32 +78,32 @@ csproj-to-tsconfig --csproj ./framework.csproj --references ./_AllReferences.ts
     <tbody>
         <tr>
             <th><code>csproj</code></th>
-            <td><string>string</string></td>
+            <td><code>string</code></td>
             <td>File path to the source .csproj file.</td>
         </tr>
         <tr>
             <th><code>references</code></th>
-            <td><string>string</string></td>
-            <td>MSBuild values to replace in raw source file paths, as <code>key=value</code> <em>(optional)</em>.</td>
-        </tr>
-        <tr>
-            <th><code>replacements</code></th>
-            <td><string>string[]</string></td>
+            <td><code>string</code></td>
             <td>File path to the target references file <em>(optional if <code>target</code> is provided)</em>.</td>
         </tr>
         <tr>
+            <th><code>replacements</code></th>
+            <td><code>string[]</code></td>
+            <td>MSBuild values to replace in raw source file paths, as <code>key=value</code> <em>(optional)</em>.</td>
+        </tr>
+        <tr>
             <th><code>target</code></th>
-            <td><string>string</string></td>
+            <td><code>string</code></td>
             <td>File path to the target tsconfig.json file <em>(optional if <code>references</code> is provided)</em>.</td>
         </tr>
         <tr>
             <th><code>template</code></th>
-            <td><string>string</string></td>
+            <td><code>string</code></td>
             <td>File path to the template tsconfig.json file <em>(optional; by default, <code>target</code>)</em>.</td>
         </tr>
         <tr>
             <th><code>timestamp</code></th>
-            <td><string>boolean</string></td>
+            <td><code>boolean</code></td>
             <td>Whether to add a timestamp comment at the top of generated files <em>(optional; by default, <code>false</code>)</em>.</td>
         </tr>
     </tbody>
@@ -113,31 +113,144 @@ csproj-to-tsconfig --csproj ./framework.csproj --references ./_AllReferences.ts
 
 `npm install --save csproj-to-tsconfig`
 
+The importable `Converter` class behaves a little differently from the CLI.
+It has a single `async` method `convert` that takes in a `csproj` path for an input project with `targetReferences` and/or `targetTsconfig` output descriptors.
+
 ```javascript
 import { Converter } from "csproj-to-tsconfig";
 
-// ...
-
+// Use with the following code samples
 const converter = new Converter();
-
-await converter.convert({
-    csproj: "path/to/csproj",
-    target: "path/to/target/tsconfig.json",
-    template: "path/to/base/tsconfig.json"
-})
 ```
 
-Unlike the key-value pairs in the CLI, replacement functions just take in values of their types, and output the transformed result.
+#### `targetTsconfig`
+
+Equivalent to the `--target` CLI flag.
+
+```javascript
+await converter.convert({
+    csproj: "path/to/project.csproj",
+    targetTsconfig: {
+        fileName: "path/to/tsconfig.json",
+        overrides: {
+            noResolve: true
+        },
+        templateTsconfig: "path/to/tsconfig.template.json",
+    }
+});
+```
+
+<table>
+    <thead>
+        <tr>
+            <td>Option</td>
+            <td>Type</td>
+            <td>Description</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th><code>fileName</code></th>
+            <td><code>string</code></td>
+            <td>File path to the target references file.</td>
+        </tr>
+        <tr>
+            <th><code>includeTimestamp</code></th>
+            <td><code>boolean</code></td>
+            <td>Whether to add a timestamp comment at the top of generated files <em>(optional; by default, <code>false</code>)</em>.</td>
+        </tr>
+        <tr>
+            <th><code>locale</code></th>
+            <td><code>string</code></td>
+            <td>A value to override the default system `Date` formatting locale <em>(optional)</em>.</td>
+        </tr>
+        <tr>
+            <th><code>overrides</code></th>
+            <td><code>object</code></td>
+            <td>Custom settings to override the template tsconfig file with <em>(optional)</em>.</td>
+        </tr>
+    </tbody>
+</table>
+
+#### `targetReferences`
+
+Equivalent to the `--references` CLI flag.
+
+```javascript
+await converter.convert({
+    csproj: "path/to/project.csproj",
+    targetReferences: {
+        fileName: "path/to/_AllReferences.ts",
+        includeTimestamp: true,
+        locale: "en-GB"
+    }
+});
+```
+
+<table>
+    <thead>
+        <tr>
+            <td>Option</td>
+            <td>Type</td>
+            <td>Description</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th><code>fileName</code></th>
+            <td><code>string</code></td>
+            <td>File path to the target references file.</td>
+        </tr>
+        <tr>
+            <th><code>includeTimestamp</code></th>
+            <td><code>boolean</code></td>
+            <td>Whether to add a timestamp comment at the top of generated files <em>(optional; by default, <code>false</code>)</em>.</td>
+        </tr>
+        <tr>
+            <th><code>locale</code></th>
+            <td><code>string</code></td>
+            <td>A value to override the default system `Date` formatting locale <em>(optional)</em>.</td>
+        </tr>
+    </tbody>
+</table>
+
+#### `.references`
+
+Unlike the CLI, `targetTsconfig` and `targetReferences` each take in their own `replacements` objects.
+The `replacements` objects are taken in as mapping functions to transform file, ItemGroup, and PropertyGroup names, instead of direct key/value pairs.
+
+```javascript
+await converter.convert({
+    csproj: "path/to/project.csproj",
+    targetTsconfig: {
+        fileName: "path/to/tsconfig.json",
+        replacements: {
+            properties: (propertyName) => {
+                if (propertyName === "MyProperty") {
+                    return "Replaced";
+                }
+
+                return propertyName;
+            },
+        },
+        templateTsconfig: "path/to/tsconfig.template.json",
+    }
+});
+```
+
 A `generateKeyValueReplacements` function is provided that can create a set of replacers for CLI-like inputs.
 
 ```javascript
-generateKeyValueReplacements([
+import { generateKeyValueReplacements } from "csproj-to-tsconfig";
+
+const replacements = generateKeyValueReplacements([
     "foo=bar",
     "@(baz)=qux",
     "$(quux)=corge"
 ])
 ```
 
+See `lib/converter.d.ts` in the package for a full description of the API options.
 
 
 ## Development
