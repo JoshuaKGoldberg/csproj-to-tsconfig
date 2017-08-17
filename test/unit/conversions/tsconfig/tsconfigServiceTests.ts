@@ -4,7 +4,7 @@ import { stub } from "sinon";
 
 import { TsconfigConversionService } from "../../../../lib/conversions/tsconfig/tsconfigService";
 import { IConversionSettings } from "../../../../lib/converter";
-import { stubCsprojContents, stubTemplateContents } from "../../utils";
+import { stubCsprojContents, stubTemplateContents, stubTime } from "../../utils";
 
 describe("TsconfigConversionService", () => {
     const stubCsprojName = "test.csproj";
@@ -133,7 +133,7 @@ describe("TsconfigConversionService", () => {
             const output = getFileContents(stubOutputName);
 
             // Assert
-            expect(output.replace(/\r\n/g, "\n")).to.be.equal(`// Generated 6/6/1234, 6:15:11 AM
+            expect(output.replace(/\r\n/g, "\n")).to.be.equal(`// Generated ${stubTime}
 {
     "compilerOptions": {},
     "files": [

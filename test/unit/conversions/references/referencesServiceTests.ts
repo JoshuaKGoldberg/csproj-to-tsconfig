@@ -3,11 +3,9 @@ import "mocha";
 
 import { IConversionServiceSettings, IOutputFileCreationSettings } from "../../../../lib/conversions/conversionService";
 import { ReferencesConversionService } from "../../../../lib/conversions/references/referencesService";
-import { stubCsprojContents } from "../../utils";
+import { stubCsprojContents, stubDate, stubTime } from "../../utils";
 
 describe("ReferencesConversionService", () => {
-    const stubDate = new Date(1234, 5, 6, 7, 8, 9); // tslint:disable-line no-magic-numbers
-
     const stubReferencesConversionService = () => {
         let fileContents = "";
         const getFileContents = () => fileContents;
@@ -56,7 +54,7 @@ describe("ReferencesConversionService", () => {
                 {
                     includeTimestamp: true,
                 },
-                `// Generated 6/6/1234, 6:15:11 AM
+                `// Generated ${stubTime}
 
 `);
         });
@@ -82,7 +80,7 @@ describe("ReferencesConversionService", () => {
                 {
                     includeTimestamp: true,
                 },
-                `// Generated 6/6/1234, 6:15:11 AM
+                `// Generated ${stubTime}
 
 /// <reference path="./first.ts" />
 /// <reference path="./second.ts" />
