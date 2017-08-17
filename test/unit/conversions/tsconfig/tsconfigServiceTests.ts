@@ -133,13 +133,13 @@ describe("TsconfigConversionService", () => {
             const output = getFileContents(stubOutputName);
 
             // Assert
-            expect(output).to.be.equal(`// Generated 6/6/1234, 6:15:11 AM
+            expect(output.replace(/\r\n/g, "\n")).to.be.equal(`// Generated 6/6/1234, 6:15:11 AM
 {
     "compilerOptions": {},
     "files": [
         "./file.ts"
     ]
-}`);
+}`.replace(/\r\n/g, "\n"));
         });
     });
 });
