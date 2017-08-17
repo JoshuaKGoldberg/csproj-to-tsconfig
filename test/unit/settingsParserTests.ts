@@ -15,7 +15,80 @@ describe("parseSettings", () => {
         const parsed = parseSettings(stubRawSettings);
 
         // Assert
-        expect(parsed).to.be.deep.equal(stubRawSettings);
+        expect(parsed).to.be.deep.equal({
+            csproj: "directory/project.csproj",
+            targetReferences: undefined,
+            targetTsconfig: {
+                fileName: "output/tsconfig.json",
+                includeTimestamp: undefined,
+                replacements: undefined,
+                templateTsconfig: "input/base.json",
+            },
+        });
+    });
+
+    it("parses timestamp from settings", () => {
+        // Act
+        const parsed = parseSettings({
+            ...stubRawSettings,
+            timestamp: true,
+        });
+
+        // Assert
+        expect(parsed).to.be.deep.equal({
+            csproj: "directory/project.csproj",
+            targetReferences: undefined,
+            targetTsconfig: {
+                fileName: "output/tsconfig.json",
+                includeTimestamp: true,
+                replacements: undefined,
+                templateTsconfig: "input/base.json",
+            },
+        });
+    });
+
+    it("provides target references instead when given a reference", () => {
+        // Act
+        const parsed = parseSettings({
+            csproj: stubRawSettings.csproj,
+            reference: "output/reference.ts",
+        });
+
+        // Assert
+        expect(parsed).to.be.deep.equal({
+            csproj: "directory/project.csproj",
+            targetReferences: {
+                fileName: "output/reference.ts",
+                includeTimestamp: undefined,
+                replacements: undefined,
+            },
+            targetTsconfig: undefined,
+        });
+    });
+
+    it("provides both references and tsconfig with timestamps when all are given", () => {
+        // Act
+        const parsed = parseSettings({
+            ...stubRawSettings,
+            reference: "output/reference.ts",
+            timestamp: true,
+        });
+
+        // Assert
+        expect(parsed).to.be.deep.equal({
+            csproj: "directory/project.csproj",
+            targetReferences: {
+                fileName: "output/reference.ts",
+                includeTimestamp: true,
+                replacements: undefined,
+            },
+            targetTsconfig: {
+                fileName: "output/tsconfig.json",
+                includeTimestamp: true,
+                replacements: undefined,
+                templateTsconfig: "input/base.json",
+            },
+        });
     });
 
     it("parses a string file replacement", () => {
@@ -25,7 +98,7 @@ describe("parseSettings", () => {
             replacement: "abc=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.files!("abc");
         // tslint:enable no-non-null-assertion
 
@@ -43,7 +116,7 @@ describe("parseSettings", () => {
             ],
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const files = replacements.files!;
         // tslint:enable no-non-null-assertion
         const replaced = [
@@ -62,7 +135,7 @@ describe("parseSettings", () => {
             replacement: "@(abc)=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.items!("abc");
         // tslint:enable no-non-null-assertion
 
@@ -77,7 +150,7 @@ describe("parseSettings", () => {
             replacement: "$(abc)=def",
         });
         // tslint:disable no-non-null-assertion
-        const replacements = settings.replacements!;
+        const replacements = settings.targetTsconfig!.replacements!;
         const replaced = replacements.properties!("abc");
         // tslint:enable no-non-null-assertion
 

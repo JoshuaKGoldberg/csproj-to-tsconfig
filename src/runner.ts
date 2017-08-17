@@ -3,12 +3,20 @@ import * as fs from "mz/fs";
 import { Converter, IConversionSettings } from "./converter";
 import { StatusCode } from "./statusCode";
 
+export const argNames = {
+    csproj: "csproj",
+    reference: "reference",
+    replacement: "replacement",
+    target: "target",
+    template: "template",
+};
+
 /**
  * Dependencies to initialize a new Runner.
  */
 export interface IRunnerDependencies {
     /**
-     * Converts .csproj files to their .tsconfig.json equivalents.
+     * Converts .csproj files to their references and/or tsconfig equivalent(s)
      */
     converter?: Converter;
 
@@ -24,22 +32,11 @@ export interface IRunnerDependencies {
 }
 
 /**
- * @param errors   Accumulated errors from ensuring settings exist.
- * @param settings   Settings to convert files.
- * @param setting   Name of a setting to verify the existence of.
- */
-const ensureSettingExists = (errors: string[], settings: Partial<IConversionSettings>, setting: keyof IConversionSettings): void => {
-    if (!settings[setting]) {
-        errors.push(`Missing required argument: ${setting}`);
-    }
-};
-
-/**
  * @param errors   Accumulated errors from ensuring files exist.
  * @param filePath   Path to a file to verify the existence of.
  * @param fileSettingsName   Name of the file under settings.
  */
-const ensureFileExists = async (errors: string[], filePath: string, fileSettingsName: keyof IConversionSettings): Promise<void> => {
+const ensureFileExists = async (errors: string[], filePath: string, fileSettingsName: string): Promise<void> => {
     if (!(await fs.exists(filePath))) {
         errors.push(`Missing required file: ${fileSettingsName} (checked '${filePath}').`);
     }
@@ -50,7 +47,7 @@ const ensureFileExists = async (errors: string[], filePath: string, fileSettings
  */
 export class Runner {
     /**
-     * Converts .csproj files to their .tsconfig.json equivalents.
+     * Converts .csproj files to their references and/or tsconfig equivalent(s)
      */
     private readonly converter: Converter;
 
@@ -82,10 +79,6 @@ export class Runner {
      * @returns Status from attempting to run the program.
      */
     public async run(rawSettings: Partial<IConversionSettings>): Promise<StatusCode> {
-        if (!rawSettings.template) {
-            rawSettings.template = rawSettings.target;
-        }
-
         const settings = this.ensureSettingsExist(rawSettings);
         if (settings === undefined) {
             return Promise.resolve(StatusCode.MissingArguments);
@@ -109,8 +102,13 @@ export class Runner {
     private ensureSettingsExist(settings: Partial<IConversionSettings>): IConversionSettings | undefined {
         const errors: string[] = [];
 
-        ensureSettingExists(errors, settings, "csproj");
-        ensureSettingExists(errors, settings, "target");
+        if (settings.csproj === undefined) {
+            errors.push(`Missing required argument: ${argNames.csproj}`);
+        }
+
+        if (settings.targetReferences === undefined && settings.targetTsconfig === undefined) {
+            errors.push(`Need to specify one or both of ${argNames.reference} and ${argNames.target}`);
+        }
 
         if (errors.length === 0) {
             return settings as IConversionSettings;
@@ -132,10 +130,15 @@ export class Runner {
     private async ensureFilesExist(settings: IConversionSettings): Promise<boolean> {
         const errors: string[] = [];
 
-        await Promise.all([
-            ensureFileExists(errors, settings.csproj, "csproj"),
-            ensureFileExists(errors, settings.template, "template"),
-        ]);
+        await ensureFileExists(errors, settings.csproj, argNames.csproj);
+
+        if (settings.targetReferences !== undefined) {
+            await ensureFileExists(errors, settings.targetReferences.fileName, argNames.reference);
+        }
+
+        if (settings.targetTsconfig !== undefined) {
+            await ensureFileExists(errors, settings.targetTsconfig.fileName, argNames.target);
+        }
 
         if (errors.length === 0) {
             return true;

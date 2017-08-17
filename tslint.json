@@ -3,15 +3,18 @@
         "tslint:all"
     ],
     "rules": {
+        "array-type": [true, "array"],
         "forin": false,
         "linebreak-style": [false],
         "max-line-length": [true, 140],
         "member-ordering": [false],
         "no-import-side-effect": [false],
         "no-magic-numbers": [true, -1, 0, 1, 2, 3],
+        "no-parameter-properties": false,
         "no-unsafe-any": [false],
         "no-unused-variable": [false],
         "prefer-function-over-method": [false],
+        "prefer-method-signature": [false],
         "strict-boolean-expressions": [false],
         "typedef": [false]
     }

@@ -14,6 +14,10 @@ export const stubCsprojContents = (filePaths: string[]): string => {
 `;
 };
 
+export const stubDate = new Date(1234, 5, 6, 7, 8, 9); // tslint:disable-line no-magic-numbers
+
+export const stubTime = stubDate.toLocaleString("en-US");
+
 export const stubTemplateContents = () => `{
     "compilerOptions": {}
 }`;

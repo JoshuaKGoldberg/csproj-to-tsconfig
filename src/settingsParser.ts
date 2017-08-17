@@ -1,4 +1,6 @@
+import { IOutputFileCreationSettings } from "./conversions/conversionService";
 import { IMSBuildReplacer, IMSBuildReplacers } from "./conversions/sourceParser";
+import { IExternalTsconfigFileCreationSettings } from "./conversions/tsconfig/tsconfigService";
 import { IConversionSettings } from "./converter";
 
 /**
@@ -18,19 +20,29 @@ export interface IRawConversionSettings {
     csproj: string;
 
     /**
-     * key=value MSBuild pairs to replace in raw source file paths.
-     */
-    replacement?: string | string[];
-
-    /**
      * File path to the target .tsconfig file.
      */
-    target: string;
+    target?: string;
 
     /**
      * File path to the template .tsconfig file.
      */
-    template: string;
+    template?: string;
+
+    /**
+     * Whether to add a timestamp comment at the top of generated files.
+     */
+    timestamp?: boolean;
+
+    /**
+     * File path to the references file, if any.
+     */
+    reference?: string;
+
+    /**
+     * key=value MSBuild pairs to replace in raw source file paths.
+     */
+    replacement?: string | string[];
 }
 
 /**
@@ -94,11 +106,26 @@ export const parseSettings = (rawConversionSettings: IRawConversionSettings): IC
         ? generateKeyValueReplacements(rawReplacements)
         : undefined;
 
-    const settings = { ...(rawConversionSettings as IConversionSettings) };
+    const targetReferences: IOutputFileCreationSettings | undefined = rawConversionSettings.reference === undefined
+        ? undefined
+        : {
+            fileName: rawConversionSettings.reference,
+            includeTimestamp: rawConversionSettings.timestamp,
+            replacements,
+        };
 
-    if (replacements !== undefined) {
-        settings.replacements = replacements;
-    }
+    const targetTsconfig: IExternalTsconfigFileCreationSettings | undefined = rawConversionSettings.target === undefined
+        ? undefined
+        : {
+            fileName: rawConversionSettings.target,
+            includeTimestamp: rawConversionSettings.timestamp,
+            replacements,
+            templateTsconfig: rawConversionSettings.template,
+        };
 
-    return settings;
+    return {
+        csproj: rawConversionSettings.csproj,
+        targetReferences,
+        targetTsconfig,
+    };
 };
