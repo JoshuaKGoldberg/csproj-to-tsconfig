@@ -20,32 +20,30 @@ npm install -g csproj-to-tsconfig
 ```
 
 At a minimum, the CLI requires:
-* A file path to a `.csproj` file path to read `TypeScriptCompile` directives from
-* A file path to where to output the generated `tsconfig.json`-like file
+* `--csproj`: a file path to a `.csproj` file path to read `TypeScriptCompile` directives from
+* `--target`: a file path to where to output the generated `tsconfig.json`-like file
 
-Converting `./framework.csproj` to `./tsconfig.json`:
-
-*(this will override any existing `./tsconfig.json` while respecting its initial settings)*
+Converting `./framework.csproj` to `./tsconfig.json` *(merging onto any existing `./tsconfig.json`)*:
 
 ```
 csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json
 ```
 
-You can also specify file path to a separate `tsconfig.json`-like file to serve as a template for the generated output file.
+You can also specify a `--template` file path to a separate `tsconfig.json`-like file to serve as a template for the generated output file.
 
-Converting `./framework.csproj` to `./tsconfig.json` using a `tsconfig.base.json` as a base for settings:
+Converting `./framework.csproj` to `./tsconfig.json` with `tsconfig.base.json` as a template for settings:
 
 ```
 csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --template ../tsconfig.base.json
 ```
 
-Add `--timestamp` to add a timestamp comment at the top of generated files.
+Add `--timestamp` to include a timestamp comment at the top of generated files.
 
 ```
 csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --timestamp
 ```
 
-Since many MSBuild files use `@(Items)` and `$(Properties)` to dynamically generate paths, you can provide a set of key-value pairs to replace them.
+Since many MSBuild files use `@(Items)` and `$(Properties)` to dynamically generate paths, you can provide any number of key-value `--replacement` pairs to replace them.
 * `@(ItemKey)=value` works on ItemGroup values
 * `$(PropertyKey)=value` works on PropertyGroup values
 * `GeneralKey=value` will be applied to all files after MSBuild pre-processing
@@ -59,11 +57,12 @@ csproj-to-tsconfig --csproj ./framework.csproj --target ./tsconfig.json --replac
 Lastly, to support projects that use a large file consisting of `///` references to enable direct-to-source Intellisense across projects (instead of `.d.ts` files), you may provide a `--references` file path to a file that will contain a plain list of `///` references to the source files.
 It will respect the same replacements as tsconfig generation logic.
 
-You may provide one or both of `--references` and `--target`, but not both.
-
 ```
 csproj-to-tsconfig --csproj ./framework.csproj --references ./_AllReferences.ts
 ```
+
+You may provide one or both of `--references` and `--target`.
+At least one is required.
 
 #### All Options
 
