@@ -4,13 +4,12 @@ import { stub } from "sinon";
 
 import { TsconfigConversionService } from "../../../../lib/conversions/tsconfig/tsconfigService";
 import { IConversionSettings } from "../../../../lib/converter";
-import { stubCsprojContents, stubTemplateContents, stubTime } from "../../utils";
+import { stubCsprojContents, stubDate, stubTemplateContents, stubTime } from "../../utils";
 
 describe("TsconfigConversionService", () => {
     const stubCsprojName = "test.csproj";
     const stubOutputName = "tsconfig.json";
     const stubTemplateName = "template.json";
-    const stubDate = new Date(1234, 5, 6, 7, 8, 9); // tslint:disable-line no-magic-numbers
 
     const stubFileContents: { [i: string]: string } = {
         [stubTemplateName]: stubTemplateContents(),
